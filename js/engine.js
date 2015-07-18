@@ -4,6 +4,7 @@ height   = 0;
 width    = 0;
 frames   = 0;
 maxJumps = 3;
+pause = false;
 
 ground = {
 	y: 550,
@@ -55,9 +56,13 @@ obstacle = {
 
 	obstacles: [],
 	colors: ['#ffbc1c', '#ff1c1c', '#ff85e1', '#52a7ff', '#78ff5d'],
+	velocity: 4,
+	addTime: 0,
 
 	add: function() {
 		var obstacle = this.createObstacle();
+		this.addTime = 40 + Math.floor(20 * Math.random());
+
 		this.obstacles.push(obstacle);
 	},
 
@@ -73,6 +78,21 @@ obstacle = {
 
 	update: function() {
 
+		if (this.addTime == 0) {
+			this.add();
+		} else {
+			this.addTime--;
+		}
+
+		for (var i = 0; i < this.obstacles.length; i++) {
+			var obs = this.obstacles[i];
+			obs.x = obs.x - this.velocity;
+
+			if ( (obs.x + obs.width) < 0) {
+				var obj = this.obstacles.splice(i, 1);
+				console.log(obj[0]);
+			}
+		}
 	},
 
 	draw: function() {
@@ -91,8 +111,11 @@ function click(event) {
 }
 
 function run() {
-	update();
-	draw();
+
+	if (!pause) {
+		update();
+		draw();
+	}
 
 	window.requestAnimationFrame(run);
 }
@@ -107,8 +130,15 @@ function draw() {
 }
 
 function update() {
+	obstacle.update();
 	block.update();
 	frames++;
+}
+
+function pauseGame(event) {
+	if (event.keyCode == 32) {
+		pause = !pause;
+	}
 }
 
 function main() {
@@ -129,6 +159,7 @@ function main() {
 	document.body.appendChild(canvas);
 
 	document.addEventListener('mousedown', click);
+	document.addEventListener('keyup', pauseGame);
 
 	run();
 }
