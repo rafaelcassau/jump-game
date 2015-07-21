@@ -5,6 +5,13 @@ width    = 0;
 frames   = 0;
 maxJumps = 3;
 pause = false;
+currentState = 0;
+
+states = {
+	PLAY: 0,
+	PLAYING: 1,
+	LOSE: 2
+},
 
 ground = {
 	y: 550,
@@ -33,9 +40,10 @@ var block = {
 		this.velocity += this.gravity;
 		this.y += this.velocity;
 
-		if (this.y > (ground.y - this.height)) {
+		if (this.y > (ground.y - this.height) && currentState != states.LOSE) {
 			this.y = ground.y - this.height;
 			this.jumpCount = 0;
+			this.velocity = 0;
 		}
 	},
 
@@ -88,11 +96,21 @@ obstacle = {
 			var obs = this.obstacles[i];
 			obs.x = obs.x - this.velocity;
 
-			if ( (obs.x + obs.width) < 0) {
+			if ( block.x < (obs.x + obs.width) && 
+				 (block.x + block.width) >= obs.x && 
+				 (block.y + block.height) >= (ground.y - obs.height)) {
+
+				currentState = states.LOSE;
+				this.obstacles = [];
+			
+			} else if ( (obs.x + obs.width) < 0) {
 				var obj = this.obstacles.splice(i, 1);
-				console.log(obj[0]);
 			}
 		}
+	},
+
+	clear: function() {
+
 	},
 
 	draw: function() {
@@ -107,7 +125,14 @@ obstacle = {
 
 function click(event) {
 
-	block.jump();
+	if (currentState == states.PLAYING) {
+		block.jump();
+	} else if (currentState == states.PLAY) {
+		currentState = states.PLAYING;
+	} else if (currentState == states.LOSE) {
+		block.y = 0;
+		currentState = states.PLAY;
+	}
 }
 
 function run() {
@@ -124,14 +149,33 @@ function draw() {
 	context.fillStyle = '#50beff';
 	context.fillRect(0,0, width, height);
 
+	if (currentState == states.PLAY) {
+
+		context.fillStyle = 'green';
+		context.fillRect(width / 2 -50, height / 2 -50, 100, 100);
+	
+	} else if (currentState == states.LOSE) {
+
+		context.fillStyle = 'red';
+		context.fillRect(width / 2 -50, height / 2 -50, 100, 100);
+
+	} else if (currentState == states.PLAYING) {
+
+		obstacle.draw();
+	}
+
 	ground.draw();
-	obstacle.draw();
 	block.draw();
 }
 
 function update() {
-	obstacle.update();
+
 	block.update();
+
+	if (currentState == states.PLAYING) {
+		obstacle.update();
+	}
+
 	frames++;
 }
 
@@ -160,6 +204,8 @@ function main() {
 
 	document.addEventListener('mousedown', click);
 	document.addEventListener('keyup', pauseGame);
+
+	currentState = states.PLAY;
 
 	run();
 }
