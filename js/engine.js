@@ -6,6 +6,7 @@ frames   = 0;
 maxJumps = 3;
 pause = false;
 currentState = 0;
+best_score: 0;
 
 states = {
 	PLAY: 0,
@@ -34,6 +35,7 @@ var block = {
 	velocity: 0,
 	jumpForce: 20,
 	jumpCount: 0,
+	score: 0,
 
 	update: function() {
 
@@ -101,18 +103,17 @@ obstacle = {
 				 (block.y + block.height) >= (ground.y - obs.height)) {
 
 				currentState = states.LOSE;
-				this.obstacles = [];
 			
-			} else if ( (obs.x + obs.width) < 0) {
+			} else if (block.x > (obs.x + obs.width) && (obs.x + obs.width) < 0) {
+				block.score++;
+			}
+			
+			if ( (obs.x + obs.width) < 0) {
 				var obj = this.obstacles.splice(i, 1);
 			}
 		}
 	},
-
-	clear: function() {
-
-	},
-
+	
 	draw: function() {
 
 		for (var i = 0; i < this.obstacles.length; i++) {
@@ -130,7 +131,15 @@ function click(event) {
 	} else if (currentState == states.PLAY) {
 		currentState = states.PLAYING;
 	} else if (currentState == states.LOSE) {
+		
+		if (block.score > best_score) {
+			best_score = block.score;
+			localStorage.setItem('best_score', best_score);
+		}
+
 		block.y = 0;
+		obstacle.obstacles = [];
+		block.score = 0;
 		currentState = states.PLAY;
 	}
 }
@@ -146,8 +155,13 @@ function run() {
 }
 
 function draw() {
+
 	context.fillStyle = '#50beff';
 	context.fillRect(0,0, width, height);
+
+	context.fillStyle = '#fff';
+	context.font = '50px Arial';
+	context.fillText(block.score, 10, 40);
 
 	if (currentState == states.PLAY) {
 
@@ -158,6 +172,30 @@ function draw() {
 
 		context.fillStyle = 'red';
 		context.fillRect(width / 2 -50, height / 2 -50, 100, 100);
+
+		context.save();
+		context.translate(width / 2, height / 2);
+		context.fillStyle = '#fff';
+		
+		if (block.score > best_score) {
+			context.fillText('Novo Record!', -150, -65);
+		} else if (best_score < 10) {
+			context.fillText('Record ' + best_score, -99, -65);
+		} else if (best_score >= 10 && best_score < 100) {
+			context.fillText('Record ' + best_score, -112, -65);
+		} else {
+			context.fillText('Record ' + best_score, -125, -65);
+		}
+
+		if (block.score < 10) {
+			context.fillText(block.score, -13, 19);
+		} else if (block.score >= 10 && block.score < 100) {
+			context.fillText(block.score, -26, 19);
+		} else {
+			context.fillText(block.score, -39, 19);
+		}
+
+		context.restore();
 
 	} else if (currentState == states.PLAYING) {
 
@@ -206,6 +244,11 @@ function main() {
 	document.addEventListener('keyup', pauseGame);
 
 	currentState = states.PLAY;
+
+	best_score = localStorage.getItem('best_score');
+	if (best_score == null) {
+		best_score = 0;
+	}
 
 	run();
 }
