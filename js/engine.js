@@ -6,7 +6,8 @@ frames   = 0;
 maxJumps = 3;
 pause = false;
 currentState = 0;
-best_score: 0;
+best_score = 0;
+image = null;
 
 states = {
 	PLAY: 0,
@@ -28,10 +29,12 @@ ground = {
 var block = {
 	x: 50,
 	y: 0,
+	// height: spriteDoll.height;
+	// width: spriteDoll.width;
 	height: 50,
 	width: 50,
 	color: '#ff4e4e',
-	gravity: 1.6,
+	gravity: 1,
 	velocity: 0,
 	jumpForce: 20,
 	jumpCount: 0,
@@ -59,6 +62,7 @@ var block = {
 	draw: function() {
 		context.fillStyle = this.color;
 		context.fillRect(this.x, this.y, this.width, this.height);
+		// spriteDoll.draw(this.x, this.y);
 	}
 };
 
@@ -156,6 +160,9 @@ function run() {
 
 function draw() {
 
+	// background.draw(0, 0);
+	// spriteDoll.draw(50, 50);
+
 	context.fillStyle = '#50beff';
 	context.fillRect(0,0, width, height);
 
@@ -249,6 +256,9 @@ function main() {
 	if (best_score == null) {
 		best_score = 0;
 	}
+
+	image = new Image();
+	// image.src = '../images/sheet.png';
 
 	run();
 }
